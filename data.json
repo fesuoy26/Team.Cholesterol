@@ -1,0 +1,498 @@
+{
+ "team": "Team Cholesterol",
+ "adminId": "p2",
+ "openingFund": 300,
+ "openingDate": "2026-11-01",
+ "currency": "SAR",
+ "players": [
+  {
+   "id": "p1",
+   "sn": 1,
+   "name": "SHIJITH",
+   "role": "member",
+   "phone": "",
+   "opening": -515.0,
+   "active": true
+  },
+  {
+   "id": "p2",
+   "sn": 2,
+   "name": "YOUSEF",
+   "role": "admin",
+   "phone": "",
+   "opening": 630.0,
+   "active": true
+  },
+  {
+   "id": "p3",
+   "sn": 3,
+   "name": "AMBROSE",
+   "role": "member",
+   "phone": "",
+   "opening": -40.0,
+   "active": true
+  },
+  {
+   "id": "p4",
+   "sn": 4,
+   "name": "ASIF",
+   "role": "member",
+   "phone": "",
+   "opening": -60.0,
+   "active": true
+  },
+  {
+   "id": "p5",
+   "sn": 5,
+   "name": "MUSTAFA",
+   "role": "member",
+   "phone": "",
+   "opening": 15.0,
+   "active": true
+  },
+  {
+   "id": "p6",
+   "sn": 6,
+   "name": "YASAR",
+   "role": "member",
+   "phone": "",
+   "opening": -110.0,
+   "active": true
+  },
+  {
+   "id": "p7",
+   "sn": 7,
+   "name": "PRABHAKARAN",
+   "role": "member",
+   "phone": "",
+   "opening": 20.0,
+   "active": true
+  },
+  {
+   "id": "p8",
+   "sn": 8,
+   "name": "SHAHIL",
+   "role": "member",
+   "phone": "",
+   "opening": 5.0,
+   "active": true
+  },
+  {
+   "id": "p9",
+   "sn": 9,
+   "name": "SHIHAB",
+   "role": "member",
+   "phone": "",
+   "opening": -50.0,
+   "active": true
+  },
+  {
+   "id": "p10",
+   "sn": 10,
+   "name": "ABHILASH",
+   "role": "member",
+   "phone": "",
+   "opening": -135.0,
+   "active": true
+  },
+  {
+   "id": "p11",
+   "sn": 11,
+   "name": "NAZEER",
+   "role": "member",
+   "phone": "",
+   "opening": -110.0,
+   "active": true
+  },
+  {
+   "id": "p12",
+   "sn": 12,
+   "name": "MUBASHIR",
+   "role": "member",
+   "phone": "",
+   "opening": -30.0,
+   "active": true
+  },
+  {
+   "id": "p13",
+   "sn": 13,
+   "name": "NAJMUDDIN (SOOPY)",
+   "role": "member",
+   "phone": "",
+   "opening": 70.0,
+   "active": true
+  },
+  {
+   "id": "p14",
+   "sn": 14,
+   "name": "SHIVADAS",
+   "role": "member",
+   "phone": "",
+   "opening": 10.0,
+   "active": true
+  },
+  {
+   "id": "p15",
+   "sn": 15,
+   "name": "GULAM",
+   "role": "member",
+   "phone": "",
+   "opening": 0,
+   "active": true
+  },
+  {
+   "id": "p16",
+   "sn": 16,
+   "name": "FAHAD",
+   "role": "member",
+   "phone": "",
+   "opening": 0,
+   "active": true
+  },
+  {
+   "id": "p17",
+   "sn": 17,
+   "name": "GUEST (SOOPY)",
+   "role": "guest",
+   "phone": "",
+   "opening": 0,
+   "active": true
+  }
+ ],
+ "sessions": [
+  {
+   "id": "s2026-11-01",
+   "date": "2026-11-01",
+   "fee": 15.0,
+   "court": 80.0,
+   "shuttle": 0,
+   "paidBy": "p2",
+   "courtPaidOn": "2026-11-01",
+   "attendance": [
+    "p1",
+    "p2",
+    "p3",
+    "p4",
+    "p6",
+    "p13"
+   ],
+   "note": ""
+  },
+  {
+   "id": "s2026-11-02",
+   "date": "2026-11-02",
+   "fee": 20.0,
+   "court": 150.0,
+   "shuttle": 0,
+   "paidBy": "p2",
+   "courtPaidOn": "2026-11-02",
+   "attendance": [
+    "p1",
+    "p2",
+    "p3",
+    "p4",
+    "p6",
+    "p7",
+    "p10",
+    "p11",
+    "p12",
+    "p15"
+   ],
+   "note": ""
+  },
+  {
+   "id": "s2026-11-03",
+   "date": "2026-11-03",
+   "fee": 15.0,
+   "court": 120.0,
+   "shuttle": 0,
+   "paidBy": "p2",
+   "courtPaidOn": "2026-11-03",
+   "attendance": [
+    "p2",
+    "p3",
+    "p4",
+    "p6",
+    "p9",
+    "p10",
+    "p13",
+    "p15"
+   ],
+   "note": ""
+  },
+  {
+   "id": "s2026-11-04",
+   "date": "2026-11-04",
+   "fee": 20.0,
+   "court": 80.0,
+   "shuttle": 0,
+   "paidBy": "p2",
+   "courtPaidOn": "2026-11-05",
+   "attendance": [
+    "p1",
+    "p3",
+    "p4",
+    "p9",
+    "p10"
+   ],
+   "note": "Yousef absent; court paid next day (5 Nov) together with that day."
+  },
+  {
+   "id": "s2026-11-05",
+   "date": "2026-11-05",
+   "fee": 15.0,
+   "court": 100.0,
+   "shuttle": 0,
+   "paidBy": "p2",
+   "courtPaidOn": "2026-11-05",
+   "attendance": [
+    "p1",
+    "p2",
+    "p3",
+    "p4",
+    "p7",
+    "p8",
+    "p9",
+    "p15"
+   ],
+   "note": ""
+  },
+  {
+   "id": "s2026-11-08",
+   "date": "2026-11-08",
+   "fee": 20.0,
+   "court": 160.0,
+   "shuttle": 0,
+   "paidBy": "p2",
+   "courtPaidOn": "2026-11-08",
+   "attendance": [
+    "p1",
+    "p2",
+    "p3",
+    "p5",
+    "p8",
+    "p9",
+    "p10",
+    "p11",
+    "p12",
+    "p13"
+   ],
+   "note": ""
+  },
+  {
+   "id": "s2026-11-09",
+   "date": "2026-11-09",
+   "fee": 20.0,
+   "court": 80.0,
+   "shuttle": 0,
+   "paidBy": "p2",
+   "courtPaidOn": "2026-11-09",
+   "attendance": [
+    "p1",
+    "p2",
+    "p3",
+    "p4",
+    "p7"
+   ],
+   "note": ""
+  },
+  {
+   "id": "s2026-11-10",
+   "date": "2026-11-10",
+   "fee": 20.0,
+   "court": 160.0,
+   "shuttle": 0,
+   "paidBy": "p2",
+   "courtPaidOn": "2026-11-10",
+   "attendance": [
+    "p2",
+    "p3",
+    "p4",
+    "p5",
+    "p6",
+    "p8",
+    "p9",
+    "p10",
+    "p12"
+   ],
+   "note": ""
+  },
+  {
+   "id": "s2026-11-11",
+   "date": "2026-11-11",
+   "fee": 15.0,
+   "court": 100.0,
+   "shuttle": 0,
+   "paidBy": "p2",
+   "courtPaidOn": "2026-11-11",
+   "attendance": [
+    "p1",
+    "p2",
+    "p3",
+    "p4",
+    "p5",
+    "p7",
+    "p13",
+    "p16"
+   ],
+   "note": ""
+  }
+ ],
+ "payments": [
+  {
+   "id": "y2026-11-01p6",
+   "date": "2026-11-01",
+   "playerId": "p6",
+   "amount": 20.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-01",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-01p12",
+   "date": "2026-11-01",
+   "playerId": "p12",
+   "amount": 150.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-01",
+   "note": "Paid without playing"
+  },
+  {
+   "id": "y2026-11-02p11",
+   "date": "2026-11-02",
+   "playerId": "p11",
+   "amount": 100.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-02",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-02p15",
+   "date": "2026-11-02",
+   "playerId": "p15",
+   "amount": 40.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-02",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-03p4",
+   "date": "2026-11-03",
+   "playerId": "p4",
+   "amount": 50.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-03",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-03p6",
+   "date": "2026-11-03",
+   "playerId": "p6",
+   "amount": 50.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-03",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-03p9",
+   "date": "2026-11-03",
+   "playerId": "p9",
+   "amount": 50.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-03",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-05p3",
+   "date": "2026-11-05",
+   "playerId": "p3",
+   "amount": 100.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-05",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-05p7",
+   "date": "2026-11-05",
+   "playerId": "p7",
+   "amount": 50.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-05",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-05p8",
+   "date": "2026-11-05",
+   "playerId": "p8",
+   "amount": 15.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-05",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-08p8",
+   "date": "2026-11-08",
+   "playerId": "p8",
+   "amount": 20.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-08",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-09p4",
+   "date": "2026-11-09",
+   "playerId": "p4",
+   "amount": 100.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-09",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-10p6",
+   "date": "2026-11-10",
+   "playerId": "p6",
+   "amount": 20.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-10",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-10p8",
+   "date": "2026-11-10",
+   "playerId": "p8",
+   "amount": 15.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-10",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-10p9",
+   "date": "2026-11-10",
+   "playerId": "p9",
+   "amount": 50.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-10",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-10p10",
+   "date": "2026-11-10",
+   "playerId": "p10",
+   "amount": 200.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-10",
+   "note": ""
+  },
+  {
+   "id": "y2026-11-11p16",
+   "date": "2026-11-11",
+   "playerId": "p16",
+   "amount": 15.0,
+   "receivedBy": "p2",
+   "sessionId": "s2026-11-11",
+   "note": ""
+  }
+ ],
+ "matches": [],
+ "updatedAt": "2026-11-12T12:00:00+03:00"
+}
