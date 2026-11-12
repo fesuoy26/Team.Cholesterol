@@ -62,7 +62,7 @@ input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);
 .payrow .q{grid-column:1/3;display:flex;gap:5px;flex-wrap:wrap}
 .payrow input{padding:8px;text-align:right;font-weight:700}
 .seg{display:flex;background:var(--grey);border-radius:10px;padding:3px;gap:3px}.seg button{flex:1;border:0;background:none;padding:7px 4px;border-radius:8px;font-size:13px}.seg button.on{background:#fff;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}th{font-size:12px;color:var(--muted)}td.n,th.n{text-align:right}
+table{width:100%;border-collapse:collapse;font-size:14px}table.mt{font-size:12.5px;table-layout:fixed}table.mt td,table.mt th{padding:7px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}table.mt col.c1{width:22px}table.mt col.c3,table.mt col.c5,table.mt col.c6{width:44px}table.mt col.c4{width:34px}table.mt col.c7{width:52px}th,td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}th{font-size:12px;color:var(--muted)}td.n,th.n{text-align:right}
 .month{font-size:13px;font-weight:800;color:var(--green2);margin:14px 2px 6px;text-transform:uppercase;letter-spacing:.5px}
 .score{font-weight:800;font-size:15px}.win{color:var(--ok)}
 .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#14231c;color:#fff;padding:10px 16px;border-radius:12px;z-index:99;font-size:14px;max-width:90%}
@@ -586,10 +586,11 @@ const SEED = {
  "matches": [],
  "updatedAt": "2026-11-12T12:00:00+03:00"
 };
-const LS_DATA='tc_data_v1', LS_DIRTY='tc_dirty_v1', LS_GH='tc_github_v1';
-let D=null, tab='status', dirty=localStorage.getItem(LS_DIRTY)==='1', remoteSha=null, syncing=false;
-let gh=JSON.parse(localStorage.getItem(LS_GH)||'{}');
-const isAdmin=()=>!!gh.token;
+const LS_DATA='tc_data_v2', LS_DIRTY='tc_dirty_v2', LS_PIN='tc_pin_v2', LS_API='tc_api_v2', LS_STAMP='tc_stamp_v2';
+let D=null, tab='status', dirty=localStorage.getItem(LS_DIRTY)==='1', syncing=false, CFG={apiUrl:''};
+let adminPin=localStorage.getItem(LS_PIN)||'', serverStamp=localStorage.getItem(LS_STAMP)||'';
+const isAdmin=()=>!!adminPin;
+const apiUrl=()=>localStorage.getItem(LS_API)||CFG.apiUrl||'';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -673,11 +674,11 @@ function vStatus(){
     <div class="kpis" style="margin-top:10px"><div class="kpi red"><b>${money(-due)}</b><span>🔴 Total to collect</span></div><div class="kpi ok"><b>${money(cr)}</b><span>🟢 Total advance</span></div>
     <div class="kpi"><b>${money(c.fund)}</b><span>🏦 Team fund</span></div><div class="kpi"><b>${money(c.pending)}</b><span>⏳ Court fee pending</span></div></div>
   </div>
+  ${vMonthCard()}
   <div class="card adminbox" onclick="showLedger('${D.adminId}')"><h2>🧾 Admin · ${esc(admin?.name)} <span class="pill ${ab>=0?'cr':'warn'}">${adminTxt(ab)}</span></h2>
     <div class="muted">Plus = admin spent from his own pocket · Minus = admin is holding team cash. Team fund ${money(c.fund)} is the surplus from fee rounding.</div>
     ${c.check!==0?`<div class="pill warn" style="margin-top:8px;display:inline-block">⚠ Books off by ${money(c.check)}</div>`:''}</div>
-  <div class="card"><div class="btns"><button class="btn" onclick="shareWA()">📲 Share on WhatsApp</button><button class="btn sec" onclick="copyWA()">📋 Copy text</button></div>
-    <div class="muted" style="margin-top:8px">🔴 Minus = amount to pay · 🟢 Plus = paid in advance · Tap a name to see the full record.</div></div>`;
+  <div class="muted" style="text-align:center;margin:4px 0 16px">🔴 Minus = amount to pay · 🟢 Plus = paid in advance · Tap a name to see the full record.</div>`;
 }
 function waText(){
   const c=compute(),last=sortedSessions()[0];
@@ -689,7 +690,7 @@ function waText(){
   t+=`\n\n🔴 To collect: ${money(-due)} | 🟢 Advance: ${money(cr)}\n🧾 Admin: ${adminTxt(c.st[D.adminId]?.bal||0)} | 🏦 Fund: ${money(c.fund)}`;
   if(c.pending)t+=`\n⏳ Court fee pending: ${money(c.pending)}`;
   t+=`\n\n🔴 Minus = court fee to pay · 🟢 Plus = paid extra`;
-  if(gh.owner&&gh.repo)t+=`\n🔗 https://${gh.owner}.github.io/${gh.repo}/`;
+  if(/^https?:/.test(location.href))t+=`\n🔗 ${location.origin+location.pathname}`;
   return t;
 }
 function shareWA(){window.open('https://wa.me/?text='+encodeURIComponent(waText()),'_blank')}
@@ -820,7 +821,7 @@ function editPlayer(id){
   <label>Opening balance (minus = owed, plus = credit)</label><input type="number" value="${p.opening}" oninput="_P.opening=+this.value">
   <label><input type="checkbox" style="width:auto" ${p.active?'checked':''} onchange="_P.active=this.checked"> Active (shows in attendance list)</label>
   <div class="btns" style="margin-top:14px"><button class="btn" style="flex:1" onclick="savePlayer()">💾 Save &amp; sync</button></div>
-  <div class="muted" style="margin-top:8px">⚠ The data file is public if the repo is public — leave phone numbers blank if members prefer.</div>`);
+  <div class="muted" style="margin-top:8px">🔒 Phone numbers are only visible to the admin.</div>`);
 }
 function savePlayer(){const p=_P;if(!p.name.trim())return toast('Enter a name');if(p.role==='admin')D.adminId=p.id;
   const i=D.players.findIndex(x=>x.id===p.id);i<0?D.players.push(p):D.players[i]=p;closeModal();commit('Player '+p.name)}
@@ -858,33 +859,118 @@ function saveMatch(){const m=_M;const n=m.format==='doubles'?2:1;if(m.a.length!=
   m.games=m.games.filter(g=>g[0]!==''&&g[1]!=='').map(g=>[+g[0],+g[1]]);if(!m.games.length)return toast('Enter at least one game score');
   const i=D.matches.findIndex(x=>x.id===m.id);i<0?D.matches.push(m):D.matches[i]=m;closeModal();commit('Match '+m.date)}
 
+/* ---------- MONTHLY REPORT ---------- */
+const ym=d=>d.slice(0,7);
+const monthName=m=>new Date(m+'-15T12:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+function monthsList(){const s=new Set([ym(today())]);D.sessions.forEach(x=>s.add(ym(x.date)));D.payments.forEach(x=>s.add(ym(x.date)));return [...s].sort().reverse()}
+function monthReport(m){
+  const c0=compute(m+'-00'),c1=compute(m+'-32');
+  const sess=D.sessions.filter(s=>ym(s.date)===m);
+  const rows=D.players.filter(p=>p.id!==D.adminId).map(p=>{const a=c0.st[p.id],b=c1.st[p.id];
+    return {p,open:a.bal,days:b.played-a.played,fee:b.fees-a.fees,paid:(b.paid-a.paid)+(b.spent-a.spent)-(b.received-a.received),bal:b.bal}})
+    .filter(r=>r.p.active||Math.abs(r.open)>0.001||r.days||Math.abs(r.paid)>0.001||Math.abs(r.bal)>0.001).sort((x,y)=>x.p.sn-y.p.sn);
+  const a=c0.st[D.adminId]||{bal:0,played:0,fees:0,spent:0,received:0,paid:0},b=c1.st[D.adminId]||a;
+  const admin={p:P(D.adminId),open:a.bal,days:b.played-a.played,fee:b.fees-a.fees,spent:b.spent-a.spent,collected:(b.received-a.received)-(b.paid-a.paid),bal:b.bal};
+  const tot=rows.reduce((t,r)=>({open:t.open+r.open,days:t.days+r.days,fee:t.fee+r.fee,paid:t.paid+r.paid,bal:t.bal+r.bal}),{open:0,days:0,fee:0,paid:0,bal:0});
+  const lastDate=sess.length?sess.map(s=>s.date).sort().pop():'';
+  return {m,rows,admin,tot,sessions:sess.length,lastDate,fund:c1.fund,pending:c1.pending,
+    due:rows.reduce((t,r)=>t+Math.min(0,r.bal),0),adv:rows.reduce((t,r)=>t+Math.max(0,r.bal),0)};
+}
+function statusRowsForSheet(){const R=monthReport(ym(today()));return R.rows.map(r=>({'S.N':r.p.sn,Name:r.p.name,Month:monthName(R.m),Opening:r.open,'Days played':r.days,'Fee':r.fee,'Paid':r.paid,Balance:r.bal,Status:statusTxt(r.bal).replace(/^\S+\s/,'')}))}
+function vMonthCard(){
+  const ms=monthsList();window._month=window._month&&ms.includes(window._month)?window._month:ms[0];
+  const R=monthReport(window._month);
+  return `<div class="card"><h2>📊 Monthly status <select style="width:auto;padding:6px 8px;font-size:14px" onchange="window._month=this.value;render()">${ms.map(m=>`<option value="${m}" ${m===window._month?'selected':''}>${monthName(m)}</option>`).join('')}</select></h2>
+  <div><table class="mt"><colgroup><col class="c1"><col><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup><tr><th>#</th><th>Name</th><th class="n">Open</th><th class="n">Days</th><th class="n">Fee</th><th class="n">Paid</th><th class="n">Bal.</th></tr>
+  ${R.rows.map(r=>`<tr onclick="showLedger('${r.p.id}')"><td>${r.p.sn}</td><td><b>${esc(r.p.name)}</b></td><td class="n">${money(r.open)}</td><td class="n">${r.days||'–'}</td><td class="n">${r.fee?money(r.fee):'–'}</td><td class="n">${r.paid?money(r.paid):'–'}</td><td class="n" style="font-weight:800;color:${r.bal<-0.001?'var(--red)':r.bal>0.001?'var(--ok)':'var(--muted)'}">${money(r.bal)}</td></tr>`).join('')}
+  <tr style="background:var(--grey);font-weight:800"><td></td><td>Total</td><td class="n">${money(R.tot.open)}</td><td class="n">${R.tot.days}</td><td class="n">${money(R.tot.fee)}</td><td class="n">${money(R.tot.paid)}</td><td class="n">${money(R.tot.bal)}</td></tr></table></div>
+  <div class="muted" style="margin-top:6px">${R.sessions} sessions${R.lastDate?' · up to '+fd(R.lastDate):''} · Balance = Open − Fee + Paid</div>
+  <div class="btns" style="margin-top:10px"><button class="btn gold" onclick="sharePNG()">📸 Share as image</button><button class="btn" onclick="shareWA()">📲 Share as text</button><button class="btn sec" onclick="copyWA()">📋 Copy text</button></div></div>`;
+}
+async function drawReportPNG(m){
+  const R=monthReport(m);const W=1080,pad=40,rowH=58,F='"Anek Malayalam",sans-serif';
+  try{await document.fonts.load(`700 30px ${F}`);await document.fonts.load(`400 26px ${F}`)}catch(e){}
+  const top=250,tableTop=top+64,n=R.rows.length,H=tableTop+(n+1)*rowH+340;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
+  x.fillStyle='#f3f6f2';x.fillRect(0,0,W,H);
+  const g=x.createLinearGradient(0,0,W,top);g.addColorStop(0,'#0f3d2e');g.addColorStop(1,'#1e6b4a');x.fillStyle=g;x.fillRect(0,0,W,top-20);
+  x.strokeStyle='rgba(255,255,255,.15)';x.lineWidth=3;x.strokeRect(18,18,W-36,top-56);x.beginPath();x.moveTo(W/2,18);x.lineTo(W/2,top-38);x.stroke();
+  x.fillStyle='#fff';x.font=`800 54px ${F}`;x.fillText('🏸 TEAM CHOLESTEROL',pad,98);
+  x.font=`600 34px ${F}`;x.fillText('Monthly Account Status — '+monthName(m),pad,150);
+  x.font=`400 26px ${F}`;x.fillStyle='rgba(255,255,255,.85)';x.fillText(`${R.sessions} sessions${R.lastDate?' · updated up to '+fd(R.lastDate,{weekday:'short',day:'numeric',month:'short',year:'numeric'}):''}`,pad,192);
+  const cols=[{t:'#',w:60,a:'c'},{t:'NAME',w:330,a:'l'},{t:'OPENING',w:130,a:'r'},{t:'DAYS',w:90,a:'c'},{t:'FEE',w:120,a:'r'},{t:'PAID',w:120,a:'r'},{t:'BALANCE',w:150,a:'r'}];
+  let cx=pad;cols.forEach(c=>{c.x=cx;cx+=c.w});
+  const cell=(c,txt,y,font,color)=>{x.font=font;x.fillStyle=color;x.textAlign=c.a==='l'?'left':c.a==='c'?'center':'right';const tx=c.a==='l'?c.x+10:c.a==='c'?c.x+c.w/2:c.x+c.w-12;x.fillText(txt,tx,y);x.textAlign='left'};
+  x.fillStyle='#1e6b4a';x.beginPath();x.roundRect(pad,top,W-2*pad,rowH,[14,14,0,0]);x.fill();
+  cols.forEach(c=>cell(c,c.t,top+38,`700 23px ${F}`,'#fff'));
+  R.rows.forEach((r,i)=>{const y=tableTop+i*rowH;x.fillStyle=i%2?'#f7faf7':'#fff';x.fillRect(pad,y,W-2*pad,rowH);
+    if(r.bal<-0.001){x.fillStyle='#fdecea'}else if(r.bal>0.001){x.fillStyle='#e6f4ec'}else x.fillStyle='#eef1ef';
+    x.fillRect(cols[6].x,y+6,cols[6].w,rowH-12);
+    const yy=y+38,base=`500 26px ${F}`;
+    cell(cols[0],String(r.p.sn),yy,base,'#6b7a72');
+    let nm=r.p.name;x.font=`700 26px ${F}`;while(x.measureText(nm).width>cols[1].w-20&&nm.length>3)nm=nm.slice(0,-2)+'…';
+    cell(cols[1],nm,yy,`700 26px ${F}`,'#14231c');
+    cell(cols[2],money(r.open),yy,base,r.open<-0.001?'#c0392b':'#14231c');
+    cell(cols[3],r.days?String(r.days):'–',yy,base,'#14231c');
+    cell(cols[4],r.fee?money(r.fee):'–',yy,base,'#14231c');
+    cell(cols[5],r.paid?money(r.paid):'–',yy,base,'#14231c');
+    cell(cols[6],money(r.bal),yy,`800 28px ${F}`,r.bal<-0.001?'#c0392b':r.bal>0.001?'#1e7d4a':'#6b7a72');
+    x.strokeStyle='#e2e8e3';x.lineWidth=1;x.beginPath();x.moveTo(pad,y+rowH);x.lineTo(W-pad,y+rowH);x.stroke()});
+  let y=tableTop+n*rowH;x.fillStyle='#dfe7e1';x.fillRect(pad,y,W-2*pad,rowH);
+  const tb=`800 26px ${F}`;cell(cols[1],'TOTAL',y+38,tb,'#14231c');cell(cols[2],money(R.tot.open),y+38,tb,'#14231c');cell(cols[3],String(R.tot.days),y+38,tb,'#14231c');cell(cols[4],money(R.tot.fee),y+38,tb,'#14231c');cell(cols[5],money(R.tot.paid),y+38,tb,'#14231c');cell(cols[6],money(R.tot.bal),y+38,tb,'#14231c');
+  y+=rowH+26;
+  const box=(bx,bw,label,val,color,bg)=>{x.fillStyle=bg;x.beginPath();x.roundRect(bx,y,bw,96,16);x.fill();x.fillStyle=color;x.font=`800 36px ${F}`;x.fillText(val,bx+20,y+48);x.fillStyle='#4b5a52';x.font=`500 22px ${F}`;x.fillText(label,bx+20,y+80)};
+  const bw=(W-2*pad-30)/4;
+  box(pad,bw,'🔴 To collect',money(-R.due),'#c0392b','#fdecea');box(pad+bw+10,bw,'🟢 Advance',money(R.adv),'#1e7d4a','#e6f4ec');
+  box(pad+2*(bw+10),bw,'🏦 Team fund',money(R.fund),'#14231c','#fff');box(pad+3*(bw+10),bw,'⏳ Court pending',money(R.pending),'#14231c','#fff');
+  y+=118;
+  const A=R.admin;x.fillStyle='#fff4e5';x.beginPath();x.roundRect(pad,y,W-2*pad,104,16);x.fill();x.strokeStyle='#f0b36a';x.setLineDash([8,6]);x.stroke();x.setLineDash([]);
+  x.fillStyle='#14231c';x.font=`800 28px ${F}`;x.fillText(`🧾 Admin ${A.p?.name||''} → ${adminTxt(A.bal)}`,pad+20,y+42);
+  x.fillStyle='#4b5a52';x.font=`500 23px ${F}`;x.fillText(`Opening ${money(A.open)} · Court paid ${money(A.spent)} · Collected ${money(A.collected)} · Own fee ${money(A.fee)}`,pad+20,y+80);
+  y+=136;x.fillStyle='#4b5a52';x.font=`500 22px ${F}`;
+  x.fillText('Balance = Opening − Fee + Paid  ·  🔴 Minus = court fee to pay  ·  🟢 Plus = paid in advance',pad,y);
+  return cv;
+}
+async function sharePNG(){
+  const m=window._month||ym(today());toast('Preparing image…');
+  const cv=await drawReportPNG(m);const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+  const name=`Team-Cholesterol-${m}.png`,file=new File([blob],name,{type:'image/png'});
+  const url=URL.createObjectURL(blob);
+  modal(`<h3>📸 ${monthName(m)}<button class="x" onclick="closeModal()">✕</button></h3><img src="${url}" style="width:100%;border-radius:12px;border:1px solid var(--line)">
+  <div class="btns" style="margin-top:12px"><button class="btn" id="shBtn">📲 Share to WhatsApp</button><a class="btn sec" style="text-decoration:none" href="${url}" download="${name}">⬇️ Download</a></div>
+  <div class="muted" style="margin-top:6px">If sharing doesn't open, tap Download (or long-press the image → Save) and send it in the group.</div>`);
+  $('#shBtn').onclick=async()=>{try{if(navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({files:[file],title:'Team Cholesterol — '+monthName(m)});else{const a=document.createElement('a');a.href=url;a.download=name;a.click();toast('Image downloaded — send it in WhatsApp')}}catch(e){}};
+}
+
 /* ---------- SETTINGS ---------- */
 function vSettings(){
   const c=compute();
   $('#view').innerHTML=`
-  <div class="card"><h2>📖 How the account works</h2><ul class="help">
-   <li><b>Played</b> → that day's fee is charged, even if nothing is paid. Paying later, in part or for several days at once is all fine. The balance simply carries forward.</li>
-   <li><b>Part payment / no change</b> → enter the cash actually received. If someone gives 100 for a 15 fee and no change is returned, the extra stays as their 🟢 credit. If change is given back later, record it as “Change / refund given back”.</li>
-   <li><b>Paid but didn't play</b> → enter the payment only. Nothing is charged (no grey shading needed).</li>
-   <li><b>Court paid later</b> (e.g. 4 Nov: admin absent, paid on 5 Nov) → mark the session “Paid later” with the date. Players are charged on the playing day. ⏳ shows while the court is unpaid.</li>
-   <li><b>Sign rule</b> → Minus = has to pay · Plus = paid extra. Admin: Plus = spent extra from pocket · Minus = holding team cash.</li>
-   <li><b>Team fund</b> = fees charged above the real court + shuttle cost. Balances + fund + pending court always add to zero ${c.check===0?'✅':'⚠ (currently off by '+money(c.check)+')'}.</li></ul></div>
-  <div class="card"><h2>🔐 Admin &amp; GitHub sync <span class="pill ${isAdmin()?'cr':'cl'}">${isAdmin()?'Admin mode':'View only'}</span></h2>
-   <div class="muted">Members open the link and see live data (view only). Only the device with the GitHub token can add or edit.</div>
-   <div class="grid2"><div><label>GitHub user / org</label><input id="g_owner" value="${esc(gh.owner||'')}" placeholder="yourname"></div><div><label>Repository</label><input id="g_repo" value="${esc(gh.repo||'')}" placeholder="team-cholesterol"></div></div>
-   <div class="grid2"><div><label>Branch</label><input id="g_branch" value="${esc(gh.branch||'main')}"></div><div><label>Data file</label><input id="g_path" value="${esc(gh.path||'data.json')}"></div></div>
-   <label>Personal access token (admin device only)</label><input id="g_token" type="password" value="${esc(gh.token||'')}" placeholder="github_pat_…">
-   <div class="btns" style="margin-top:10px"><button class="btn" onclick="saveGH()">💾 Save &amp; connect</button><button class="btn sec" onclick="pull(true)">⬇️ Reload from GitHub</button>${isAdmin()?`<button class="btn sec" onclick="push()">⬆️ Push now</button><button class="btn red" onclick="gh.token='';localStorage.setItem(LS_GH,JSON.stringify(gh));render()">Log out</button>`:''}</div></div>
+  <div class="card"><h2>🔐 Admin <span class="pill ${isAdmin()?'cr':'cl'}">${isAdmin()?'Admin mode':'View only'}</span></h2>
+   ${isAdmin()?`<div class="muted">You can add and edit. Every save goes to the Google Sheet.</div>
+   <div class="btns" style="margin-top:10px"><button class="btn sec" onclick="push('manual')">⬆️ Sync now</button><button class="btn sec" onclick="if(confirm('Upload ALL data on this phone to the Google Sheet (overwrites the Sheet)?'))push('upload all',true)">⬆️ Upload all data</button><button class="btn red" onclick="logout()">Log out</button></div>`
+   :`<div class="muted">Members only view. The admin enters the PIN to add or edit.</div>
+   <label>Admin PIN</label><input id="pinIn" type="tel" inputmode="numeric" autocomplete="off" placeholder="PIN">
+   <div class="btns" style="margin-top:10px"><button class="btn" onclick="login($('#pinIn').value.trim())">🔓 Log in</button></div>`}</div>
+  <div class="card"><h2>🔗 Data connection</h2>
+   <div class="muted">${apiUrl()?'Connected to Google Sheet ✅':'Not connected yet — paste the Web app URL from Google Apps Script (see setup guide).'}</div>
+   ${isAdmin()||!CFG.apiUrl?`<label>Google Apps Script Web app URL</label><input id="apiIn" value="${esc(localStorage.getItem(LS_API)||CFG.apiUrl||'')}" placeholder="https://script.google.com/macros/s/…/exec" style="font-size:13px">
+   <div class="btns" style="margin-top:10px"><button class="btn sec" onclick="localStorage.setItem(LS_API,$('#apiIn').value.trim());pull(true)">💾 Save URL</button><button class="btn sec" onclick="pull(true)">🔄 Reload data</button></div>`:`<div class="btns" style="margin-top:10px"><button class="btn sec" onclick="pull(true)">🔄 Reload data</button></div>`}</div>
   ${isAdmin()?`<div class="card"><h2>🏦 Opening values</h2><div class="grid2"><div><label>Opening team fund</label><input type="number" value="${D.openingFund}" onchange="D.openingFund=+this.value;commit('Opening fund')"></div><div><label>Records start</label><input type="date" value="${D.openingDate||''}" onchange="D.openingDate=this.value;commit('Opening date')"></div></div>
    <div class="muted">Opening balances per player are set in Players → Edit.</div></div>`:''}
-  <div class="card"><h2>💾 Backup</h2><div class="btns"><button class="btn sec" onclick="dl('team-cholesterol-data.json',JSON.stringify(D,null,1),'application/json')">⬇️ JSON backup</button><button class="btn sec" onclick="exportCSV()">⬇️ Balances CSV (Excel)</button><button class="btn sec" onclick="exportLedgerCSV()">⬇️ Session register CSV</button>${isAdmin()?`<label class="btn sec" style="margin:0;color:var(--ink)">⬆️ Import JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(this)"></label>`:''}</div></div>
+  <div class="card"><h2>📖 How the account works</h2><ul class="help">
+   <li><b>Played</b> → that day's fee is charged, even if nothing is paid. Paying later, part-paying or paying several days at once is fine — the balance carries forward.</li>
+   <li><b>Part payment / no change</b> → enter the cash actually received. If someone gives 100 for a 15 fee and no change is returned, the extra stays as their 🟢 credit. When change is given back later, record “Change / refund given back”.</li>
+   <li><b>Paid but didn't play</b> → enter the payment only. Nothing is charged.</li>
+   <li><b>Court paid later</b> (e.g. 4 Nov: admin absent, paid on 5 Nov) → mark the session “Paid later” with the date. Players are still charged on the playing day. ⏳ shows while unpaid.</li>
+   <li><b>Sign rule</b> → Minus = has to pay · Plus = paid extra. Admin: Plus = spent extra from pocket · Minus = holding team cash.</li>
+   <li><b>Team fund</b> = fees charged above the real court + shuttle cost. Balances + fund + pending court always add to zero ${c.check===0?'✅':'⚠ (off by '+money(c.check)+')'}.</li></ul></div>
+  <div class="card"><h2>💾 Backup</h2><div class="btns"><button class="btn sec" onclick="dl('team-cholesterol-data.json',JSON.stringify(D,null,1),'application/json')">⬇️ JSON backup</button><button class="btn sec" onclick="exportCSV()">⬇️ Balances CSV</button><button class="btn sec" onclick="exportLedgerCSV()">⬇️ Session register CSV</button>${isAdmin()?`<label class="btn sec" style="margin:0;color:var(--ink)">⬆️ Import JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(this)"></label>`:''}</div></div>
   <div class="muted" style="text-align:center;margin:20px 0">Team Cholesterol · Riyadh</div>`;
 }
-function saveGH(){gh={owner:$('#g_owner').value.trim(),repo:$('#g_repo').value.trim(),branch:$('#g_branch').value.trim()||'main',path:$('#g_path').value.trim()||'data.json',token:$('#g_token').value.trim()};
-  localStorage.setItem(LS_GH,JSON.stringify(gh));pull(true).then(()=>{if(dirty)push()})}
 function dl(name,txt,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;a.click()}
-const csv=rows=>'\ufeff'+rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-function exportCSV(){const c=compute();dl('team-cholesterol-balances.csv',csv([['S.N','Name','Role','Opening','Sessions','Fee charged','Paid','Court paid for team','Collected','Balance','Status'],...D.players.sort((a,b)=>a.sn-b.sn).map(p=>{const s=c.st[p.id];return[p.sn,p.name,p.role,p.opening,s.played,s.fees,s.paid,s.spent,s.received,s.bal,p.id===D.adminId?adminTxt(s.bal):statusTxt(s.bal).replace(/^\S+\s/,'')]})]),'text/csv')}
+const csv=rows=>'﻿'+rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+function exportCSV(){const c=compute();dl('team-cholesterol-balances.csv',csv([['S.N','Name','Role','Opening','Sessions','Fee charged','Paid','Court paid for team','Collected','Balance','Status'],...[...D.players].sort((a,b)=>a.sn-b.sn).map(p=>{const s=c.st[p.id];return[p.sn,p.name,p.role,p.opening,s.played,s.fees,s.paid,s.spent,s.received,s.bal,p.id===D.adminId?adminTxt(s.bal):statusTxt(s.bal).replace(/^\S+\s/,'')]})]),'text/csv')}
 function exportLedgerCSV(){const ss=[...D.sessions].sort((a,b)=>a.date<b.date?-1:1);const ps=[...D.players].sort((a,b)=>a.sn-b.sn);
   const rows=[['Date','Fee','Court','Shuttle','Paid by','Court paid on',...ps.map(p=>p.name+' played'),...ps.map(p=>p.name+' paid')]];
   ss.forEach(s=>rows.push([s.date,s.fee,s.court,s.shuttle,pname(s.paidBy),s.courtPaidOn,...ps.map(p=>s.attendance.includes(p.id)?1:''),...ps.map(p=>{const v=D.payments.filter(x=>x.date===s.date&&x.playerId===p.id).reduce((a,x)=>a+ +x.amount,0);return v||''})]));
@@ -895,52 +981,66 @@ function importJSON(inp){const f=inp.files[0];if(!f)return;f.text().then(t=>{con
 function modal(h){$('#modalRoot').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="sheet">${h}</div></div>`;document.body.style.overflow='hidden'}
 function closeModal(){$('#modalRoot').innerHTML='';document.body.style.overflow=''}
 
-/* ---------- STORAGE & GITHUB SYNC ---------- */
-const b64e=s=>btoa(unescape(encodeURIComponent(s))),b64d=s=>decodeURIComponent(escape(atob(s.replace(/\n/g,''))));
-// members: owner/repo auto-detected from the GitHub Pages address (owner.github.io/repo)
-if(!gh.owner&&location.hostname.endsWith('.github.io')){gh.owner=location.hostname.split('.')[0];gh.repo=location.pathname.split('/').filter(Boolean)[0]||(gh.owner+'.github.io');gh.auto=true}
-const api=()=>`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${gh.path||'data.json'}`;
-const hdr=()=>({'Accept':'application/vnd.github+json',...(gh.token?{'Authorization':'Bearer '+gh.token}:{})});
-function saveLocal(){localStorage.setItem(LS_DATA,JSON.stringify(D));localStorage.setItem(LS_DIRTY,dirty?'1':'0')}
+/* ---------- STORAGE & GOOGLE SHEET SYNC ---------- */
+function saveLocal(){localStorage.setItem(LS_DATA,JSON.stringify(D));localStorage.setItem(LS_DIRTY,dirty?'1':'0');localStorage.setItem(LS_STAMP,serverStamp||'')}
 function commit(msg){D.updatedAt=new Date().toISOString();dirty=true;saveLocal();render();if(isAdmin())push(msg);else toast('Saved on this device')}
 let syncState='';
 function updBadge(){const dot=$('#syncDot'),t=$('#syncTxt');dot.className='dot';
   if(syncing){dot.classList.add('warn');t.textContent='Syncing…';return}
-  if(syncState==='err'){dot.classList.add('err');t.textContent=isAdmin()?'Sync failed · tap to retry':'Offline copy';return}
+  if(!apiUrl()){dot.classList.add('warn');t.textContent='Not connected';return}
+  if(syncState==='err'){dot.classList.add('err');t.textContent=isAdmin()&&dirty?'Not synced · tap to retry':'Offline copy · tap to retry';return}
   if(dirty&&isAdmin()){dot.classList.add('warn');t.textContent='Unsynced changes · tap to sync';return}
   t.textContent=(isAdmin()?'Admin · ':'')+'Updated '+(D?.updatedAt?new Date(D.updatedAt).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'')}
-$('#syncBadge').onclick=()=>{if(isAdmin()&&dirty)push();else pull(true)};
+$('#syncBadge').onclick=()=>{if(isAdmin()&&dirty)push('retry');else pull(true)};
+async function api(params,body){
+  const u=apiUrl();if(!u)throw new Error('No Google Sheet connected');
+  const q=new URLSearchParams({...params,t:Date.now()}).toString();
+  const r=body?await fetch(u,{method:'POST',body:JSON.stringify(body)}):await fetch(u+(u.includes('?')?'&':'?')+q,{cache:'no-store'});
+  const txt=await r.text();
+  try{return JSON.parse(txt)}catch(e){throw new Error(/<html/i.test(txt)?'Web app is not shared with “Anyone” — redeploy the script':'Unexpected reply ('+r.status+')')}
+}
 async function pull(manual){
+  if(!apiUrl()){render();if(manual)toast('Paste the Google Sheet Web app URL first');return}
   syncing=true;updBadge();
   try{
-    let remote=null;
-    if(gh.owner&&gh.repo){const r=await fetch(api()+`?ref=${encodeURIComponent(gh.branch||'main')}&t=${Date.now()}`,{headers:hdr(),cache:'no-store'});
-      if(r.ok){const j=await r.json();remoteSha=j.sha;remote=JSON.parse(b64d(j.content))}else if(r.status!==404)throw new Error('GitHub '+r.status)}
-    if(!remote){const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});if(r.ok)remote=await r.json()}
-    if(remote){
-      if(dirty&&isAdmin()&&D&&remote.updatedAt>D.updatedAt){if(confirm('GitHub has newer data than your unsynced changes. Load GitHub version? (Cancel keeps yours)')){D=remote;dirty=false}}
-      else if(!(dirty&&isAdmin())){D=remote;dirty=false}
-      saveLocal();syncState='';if(manual)toast('Loaded latest data');
-    }else if(manual)toast('No data file found on GitHub yet');
+    const j=await api({action:'get',...(adminPin?{pin:adminPin}:{})});
+    if(j.error)throw new Error(j.error);
+    if(j.empty){syncState='';if(isAdmin()){toast('Google Sheet is empty — uploading your data…');syncing=false;return push('first upload',true)}else if(manual)toast('No data in the Google Sheet yet')}
+    else{
+      if(dirty&&isAdmin()&&j.updatedAt!==serverStamp){if(confirm('The Google Sheet has newer data than your unsynced changes. Load the Sheet version? (Cancel keeps yours)')){D=j;dirty=false}}
+      else if(!(dirty&&isAdmin()))D=j;
+      serverStamp=j.updatedAt;syncState='';saveLocal();if(manual)toast('Loaded latest data');
+      if(dirty&&isAdmin()){syncing=false;return push('pending changes')}
+    }
   }catch(e){syncState='err';if(manual)toast('Could not load: '+e.message)}
   syncing=false;render();
 }
-async function push(msg){
-  if(!isAdmin()||!gh.owner||!gh.repo)return;syncing=true;updBadge();
+async function push(msg,force){
+  if(!isAdmin())return;if(!apiUrl())return toast('Connect the Google Sheet first (More tab)');
+  syncing=true;updBadge();
   try{
-    if(!remoteSha){const r=await fetch(api()+`?ref=${encodeURIComponent(gh.branch||'main')}&t=${Date.now()}`,{headers:hdr(),cache:'no-store'});if(r.ok)remoteSha=(await r.json()).sha}
-    const body={message:'TC: '+(msg||'update')+' ('+today()+')',content:b64e(JSON.stringify(D,null,1)),branch:gh.branch||'main'};if(remoteSha)body.sha=remoteSha;
-    let r=await fetch(api(),{method:'PUT',headers:{...hdr(),'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(r.status===409||r.status===422){const g=await fetch(api()+`?ref=${encodeURIComponent(gh.branch||'main')}&t=${Date.now()}`,{headers:hdr(),cache:'no-store'});if(g.ok){body.sha=(await g.json()).sha;r=await fetch(api(),{method:'PUT',headers:{...hdr(),'Content-Type':'application/json'},body:JSON.stringify(body)})}}
-    if(!r.ok)throw new Error((await r.json()).message||r.status);
-    remoteSha=(await r.json()).content.sha;dirty=false;syncState='';saveLocal();toast('✅ Synced to GitHub');
-  }catch(e){syncState='err';toast('Sync failed: '+e.message+' — saved on device, will retry')}
+    let j=await api(null,{pin:adminPin,base:serverStamp,force:!!force,data:D,status:statusRowsForSheet()});
+    if(j.conflict){
+      if(confirm('Data was changed from another phone. OK = overwrite with YOUR version · Cancel = load the other version')){j=await api(null,{pin:adminPin,force:true,data:D,status:statusRowsForSheet()})}
+      else{dirty=false;syncing=false;return pull(true)}
+    }
+    if(!j.ok)throw new Error(j.error||'save failed');
+    serverStamp=j.updatedAt;dirty=false;syncState='';saveLocal();toast('✅ Saved to Google Sheet');
+  }catch(e){syncState='err';toast('Not synced: '+e.message+' — kept on this phone, will retry')}
   syncing=false;render();
 }
+async function login(pin){
+  if(!pin)return toast('Enter the PIN');
+  try{const j=await api({action:'check',pin});if(!j.ok)return toast('Wrong PIN');
+    adminPin=pin;localStorage.setItem(LS_PIN,pin);toast('🔓 Admin mode');await pull(false);tab='status';render()}
+  catch(e){toast('Could not check PIN: '+e.message)}
+}
+function logout(){if(dirty&&!confirm('There are unsynced changes on this phone. Log out anyway?'))return;adminPin='';localStorage.removeItem(LS_PIN);dirty=false;saveLocal();render();pull(false)}
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;window.scrollTo(0,0);render()});
 window.addEventListener('online',()=>{if(dirty&&isAdmin())push('retry')});
-// boot: show local/seed instantly, then fetch latest
-D=JSON.parse(localStorage.getItem(LS_DATA)||'null')||SEED;render();pull(false);
+// boot: show cached/seed instantly, then load config + latest data from the Google Sheet
+D=JSON.parse(localStorage.getItem(LS_DATA)||'null')||SEED;render();
+(async()=>{try{const r=await fetch('config.json?t='+Date.now(),{cache:'no-store'});if(r.ok)CFG=await r.json();if(!/^https:\/\/script\.google/.test(CFG.apiUrl||''))CFG.apiUrl=''}catch(e){}pull(false)})();
 </script>
 </body>
 </html>
